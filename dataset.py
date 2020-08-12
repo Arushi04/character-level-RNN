@@ -4,7 +4,9 @@ import unicodedata
 import os
 import argparse
 
+import torch
 from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import random_split
 
 import numpy as np
 
@@ -41,11 +43,11 @@ class Vocab():
 
 class NameDataset(Dataset):
     def __init__(self, root_dir=None, max_len=20):
-        self.names = []  #[[1 2 5 3] [4 6 5 2]]
+        self.names = []
         self.labels = []  #[1,2,3]
         self.label_map = {}  #{Arabic:1, chinese:2}
 
-        self.vocab = Vocab(max_len = max_len)
+        self.vocab = Vocab(max_len=max_len)
         self.root_dir = root_dir
 
         self.prepare_data()
@@ -55,8 +57,8 @@ class NameDataset(Dataset):
 
     def __getitem__(self, index):
         X = self.names[index]
-        Y = self.labels[index]
-        return np.array(X), np.array(Y)
+        y = self.labels[index]
+        return np.array(X), np.array(y)
 
 
     def unicode_to_Ascii(self, s):
@@ -74,14 +76,14 @@ class NameDataset(Dataset):
 
     def prepare_data(self):
         count = 0
-        vocab_count = 0
-        filepaths = glob.glob(self.root_dir + "*.txt")
+        filepaths = glob.glob(self.root_dir + "*.txt")  #finds the directory path
 
+        #Reading the files
         for filename in filepaths:
             print(filename)
             label_name = os.path.splitext(os.path.basename(filename))[0]
             if label_name not in self.label_map:
-                self.label_map[label_name] = count + 1
+                self.label_map[label_name] = count + 1   #creating label map
                 count += 1
 
             lines = self.read_lines(filename)
@@ -91,26 +93,20 @@ class NameDataset(Dataset):
                 if ids is not None:
                     self.names.append(ids)
                     self.labels.append(current_label)
-
+        print(len(self.labels))
         assert len(self.names) == len(self.labels)
 
 
-def main(args):
-    dataset = NameDataset(args.dataset)
-    loader = DataLoader(dataset,  batch_size=5)
+def fetch_dataset(datapath):
+    #to do : set seed while splitting
+    dataset = NameDataset(datapath)  # creating the dataset
+    trainN = int(len(dataset) * 0.8)
+    validN = len(dataset) - trainN
+    lengths = [trainN, validN]
+    trainset, valset = random_split(dataset, lengths)
 
-    for batch in loader:
-        import pdb
-        pdb.set_trace()
-        seqs, labels = batch
-        print("labels : ", labels)
-        print("seq : ", seqs)
+    train_dl = DataLoader(trainset, batch_size=64, shuffle=True)
+    val_dl = DataLoader(valset, batch_size=64, shuffle=False)
 
-        break
+    return train_dl, val_dl
 
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Arguments')
-    parser.add_argument("--dataset", type=str, default="data/names/", help="")
-    args = parser.parse_args()
-    main(args)
