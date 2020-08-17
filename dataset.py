@@ -2,9 +2,7 @@ import glob
 import string
 import unicodedata
 import os
-import argparse
 
-import torch
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.data import random_split
 
@@ -19,6 +17,9 @@ class Vocab():
         self.id2char = {0:self.pad_token}
         self.max_len = max_len
         self.lower = lower
+
+    def __len__(self):
+        return len(self.char2id)
 
     def get_ids(self, name):
         ids = []
@@ -42,12 +43,12 @@ class Vocab():
 
 
 class NameDataset(Dataset):
-    def __init__(self, root_dir=None, max_len=20):
+    def __init__(self, root_dir=None, max_len=20, vocab=None):
         self.names = []
-        self.labels = []  #[1,2,3]
-        self.label_map = {}  #{Arabic:1, chinese:2}
+        self.labels = []
+        self.label_map = {}
 
-        self.vocab = Vocab(max_len=max_len)
+        self.vocab = Vocab(max_len=max_len) if vocab is None else vocab
         self.root_dir = root_dir
 
         self.prepare_data()
@@ -59,6 +60,10 @@ class NameDataset(Dataset):
         X = self.names[index]
         y = self.labels[index]
         return np.array(X), np.array(y)
+
+    def __str__(self):
+        str = f'Total names {len(self.names)}'
+        return str
 
 
     def unicode_to_Ascii(self, s):
@@ -83,7 +88,7 @@ class NameDataset(Dataset):
             print(filename)
             label_name = os.path.splitext(os.path.basename(filename))[0]
             if label_name not in self.label_map:
-                self.label_map[label_name] = count + 1   #creating label map
+                self.label_map[label_name] = count   #creating label map
                 count += 1
 
             lines = self.read_lines(filename)
@@ -100,13 +105,14 @@ class NameDataset(Dataset):
 def fetch_dataset(datapath):
     #to do : set seed while splitting
     dataset = NameDataset(datapath)  # creating the dataset
+    #print(dataset)
     trainN = int(len(dataset) * 0.8)
     validN = len(dataset) - trainN
     lengths = [trainN, validN]
     trainset, valset = random_split(dataset, lengths)
 
-    train_dl = DataLoader(trainset, batch_size=64, shuffle=True)
-    val_dl = DataLoader(valset, batch_size=64, shuffle=False)
+    train_dl = DataLoader(trainset, batch_size=32, shuffle=True)
+    val_dl = DataLoader(valset, batch_size=32, shuffle=False)
 
-    return train_dl, val_dl
+    return train_dl, val_dl, dataset.vocab, dataset.label_map
 
