@@ -1,14 +1,12 @@
 # Names Classification using character-level LSTM model
 
-<img src="https://github.com/Arushi04/character-level-RNN/blob/master/images/cover.png" width="700" height="300">
+<img src="https://github.com/Arushi04/character-level-RNN/blob/master/images/cover.png" width="800" height="400">
 
 ### Description : 
 A character-level LSTM reads words as a series of characters and outputs a prediction and a “hidden state” at each step, feeding its previous hidden state into each next step. We take the final prediction to be the output, i.e. which class the word belongs to. In this project, we will train a few thousand names from 18 languages of origin, and predict which language a name is from based on the spelling.
 
 ### Dataset:
 The dataset consists of names from 18 languages of origin and can be found in the data folder. There are 18 files of different languages, consisting of one name in each line.
-
-### Architecture of LSTM:
 
 <img src="https://github.com/Arushi04/character-level-RNN/blob/master/images/lstm.jpg" width="700" height="300">
 
