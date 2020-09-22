@@ -14,9 +14,9 @@ The dataset consists of names from 18 languages of origin and can be found in th
 
 The project is broken down in 3 files:
 
-**dataset.py :** Loading, pre-processing and splitting the dataset using Data Loader
-**model.py :** Defining the layers of the LSTM model
-**main.py :** Training the training dataset using the defined model and predicting classes for test images. Visualizing traing and test loss and accuracy on test datasets
+**dataset.py :** Loading, pre-processing and splitting the dataset using Data Loader       
+**model.py :** Defining the layers of the LSTM model        
+**main.py :** Training the training dataset using the defined model and predicting languages for test data. Visualizing traing and test loss and accuracy on test datasets
 
 ### Requirements
 * Python 3.6.10  
